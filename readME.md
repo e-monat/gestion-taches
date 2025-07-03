@@ -31,7 +31,8 @@ Palette de couleurs inspirée des **Canadiens de Montréal** :
 
 ## 🗂️ Structure des vues
 
-``` src/
+```
+ src/
 ├── views/
 │ ├── Login.vue
 │ ├── Register.vue
@@ -45,10 +46,9 @@ Palette de couleurs inspirée des **Canadiens de Montréal** :
 ├── state.js
 ├── firebase.js
 └── theme/variables.css
-
+```
 
 ## ⚙️ Lancer le projet en local
 
-```bash
 npm install
 ionic serve
