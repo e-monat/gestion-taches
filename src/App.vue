@@ -4,6 +4,16 @@
   </ion-app>
 </template>
 
-<script setup lang="ts">
-import { IonApp, IonRouterOutlet } from '@ionic/vue';
+<script setup>
+import { IonApp, IonRouterOutlet } from '@ionic/vue' // ← Ceci est obligatoire
+import { onMounted } from 'vue'
+import { state } from './state'
+
+onMounted(() => {
+  state.listenAuthState()
+})
 </script>
+
+<style>
+
+</style>

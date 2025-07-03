@@ -1,16 +1,46 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
-import HomePage from '../views/HomePage.vue'
+import { createRouter, createWebHistory } from '@ionic/vue-router'
+import Tabs from '../views/Tabs.vue'
+import Login from '../views/Login.vue'
+import Register from '../views/Register.vue'
 
-const routes: Array<RouteRecordRaw> = [
+const routes = [
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/login'
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: HomePage
+    path: '/login',
+    component: Login
+  },
+  {
+    path: '/register',
+    component: Register
+  },
+  {
+    path: '/nouvelle-tache',
+    component: () => import('../views/NouvelleTache.vue')
+  },
+  {
+    path: '/tabs/',
+    component: Tabs,
+    children: [
+      {
+        path: '',
+        redirect: '/tabs/mes-taches'
+      },
+      {
+        path: 'mes-taches',
+        component: () => import('../views/tabs/MesTaches.vue')
+      },
+      {
+        path: 'autres',
+        component: () => import('../views/tabs/Autres.vue')
+      },
+      {
+        path: 'archivees',
+        component: () => import('../views/tabs/Archivees.vue')
+      }
+    ]
   }
 ]
 
