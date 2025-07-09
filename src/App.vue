@@ -5,15 +5,5 @@
 </template>
 
 <script setup>
-import { IonApp, IonRouterOutlet } from '@ionic/vue' // ← Ceci est obligatoire
-import { onMounted } from 'vue'
-import { state } from './state'
-
-onMounted(() => {
-  state.listenAuthState()
-})
+import { IonApp, IonRouterOutlet } from '@ionic/vue'
 </script>
-
-<style>
-
-</style>

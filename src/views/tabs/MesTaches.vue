@@ -11,7 +11,7 @@
 
     <ion-content class="ion-padding">
       <ion-list>
-        <ion-item v-for="task in state.myTasks" :key="task.id" button @click="edit(task)">
+        <ion-item v-for="task in myTasks" :key="task.taskId" button @click="edit(task)">
           <ion-label>
             <h2>{{ task.title }}</h2>
             <p>{{ task.description }}</p>
@@ -24,7 +24,6 @@
               @click.stop
           />
         </ion-item>
-
       </ion-list>
 
       <ion-fab slot="fixed" vertical="bottom" horizontal="end">
@@ -37,30 +36,60 @@
 </template>
 
 <script setup>
-import { state } from '../../state'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../../state'
+import {onMounted, ref, computed, onActivated} from 'vue'
 import { addOutline } from 'ionicons/icons'
 
 const router = useRouter()
+const userStore = useUserStore()
+const tasks = ref([])
 
-function create() {
-  router.push('/nouvelle-tache')
+onMounted(fetchTasks)
+onActivated(fetchTasks)
+
+async function fetchTasks() {
+  const res = await fetch(`https://server-1-t93s.onrender.com/api/tasks-management/get-tasks/${userStore.user.userId}`)
+  const data = await res.json()
+  tasks.value = data.tasks || []
 }
 
-function edit(task) {
-  router.push({ path: '/nouvelle-tache', query: { id: task.id } })
-}
+const myTasks = computed(() => tasks.value.filter(t => t.isOwner))
 
 function toggleDone(task) {
-  state.updateTask(task.id, { isDone: !task.isDone })
+  fetch('https://server-1-t93s.onrender.com/api/tasks-management/update-task', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: userStore.user.userId,
+      taskId: task.taskId,
+      isDone: !task.isDone
+    })
+  }).then(fetchTasks)
 }
 
 function formatDate(d) {
   return new Date(d).toLocaleString()
 }
 
+function create() {
+  window.location.href = '/nouvelle-tache'
+}
+
+function edit(task) {
+  router.push({
+    path: '/nouvelle-tache',
+    query: {
+      taskId: task.taskId,
+      title: task.title,
+      description: task.description,
+      isDone: task.isDone
+    }
+  })
+}
+
 function logout() {
-  state.signOut()
+  userStore.clearUser()
   router.push('/login')
 }
 </script>
