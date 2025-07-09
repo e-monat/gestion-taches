@@ -42,46 +42,39 @@
 </template>
 
 <script setup>
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonInput,
-  IonButton,
-  IonText,
-  IonToast
-} from '@ionic/vue'
-
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { state } from '../state'
+import { useUserStore } from '../state.js'
 
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const showToast = ref(false)
 const router = useRouter()
+const userStore = useUserStore()
 
-async function login() {
-  console.log('Tentative de connexion...')
-  error.value = ''
-  if (!email.value || !password.value) {
-    error.value = "Champs requis"
-    return
-  }
+const login = async () => {
   try {
-    await state.signIn(email.value, password.value)
-    await state.loadTasks()
+    const res = await fetch('https://server-1-t93s.onrender.com/api/user/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value, password: password.value })
+    })
+
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.message || 'Connexion échouée')
+    }
+
+    const user = await res.json()
+    userStore.setUser(user)
+
     showToast.value = true
     setTimeout(() => {
       router.push('/tabs/mes-taches')
-    }, 2000)
+    }, 1000)
   } catch (err) {
-    console.error(err)
-    error.value = "Email ou mot de passe invalide"
+    error.value = err.message
   }
 }
 </script>
-

@@ -9,19 +9,19 @@
     <ion-content class="ion-padding">
       <ion-list>
         <ion-item
-            v-for="task in state.archivedTasks"
-            :key="task.id"
+            v-for="task in archivedTasks"
+            :key="task.taskId"
             lines="full"
         >
           <ion-label>
             <h2>{{ task.title }}</h2>
             <p>{{ task.description }}</p>
-            <small>{{ formatDate(task.date) }} - {{ getOwnerName(task.ownerId) }}</small>
+            <small>{{ formatDate(task.date) }} - {{ getOwnerName(task) }}</small>
           </ion-label>
           <ion-checkbox
               slot="end"
               :checked="task.isDone"
-              :disabled="task.ownerId !== state.user.userId"
+              :disabled="!task.isOwner"
               @ionChange="toggleArchived(task)"
           />
         </ion-item>
@@ -31,20 +31,38 @@
 </template>
 
 <script setup>
-import { state } from '../../state'
+import { ref, computed, onMounted } from 'vue'
+import { useUserStore } from '../../state'
 
-function toggleArchived(task) {
-  if (task.ownerId !== state.user.userId) {
-    console.warn("Vous ne pouvez pas modifier cette tache")
-    return
-  }
-  state.updateTask(task.id, { isDone: !task.isDone })
+const userStore = useUserStore()
+const tasks = ref([])
+
+onMounted(fetchTasks)
+
+async function fetchTasks() {
+  const res = await fetch(`https://server-1-t93s.onrender.com/api/tasks-management/get-tasks/${userStore.user.userId}`)
+  const data = await res.json()
+  tasks.value = data.tasks || []
 }
 
-function getOwnerName(ownerId) {
-  const t = state.tasks.find(t => t.ownerId === ownerId)
-  if (!t) return ''
-  return t.firstName + ' ' + t.lastName
+const archivedTasks = computed(() => tasks.value.filter(t => t.isDone))
+
+function toggleArchived(task) {
+  if (!task.isOwner) return
+
+  fetch('https://server-1-t93s.onrender.com/api/tasks-management/update-task', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: userStore.user.userId,
+      taskId: task.taskId,
+      isDone: !task.isDone
+    })
+  }).then(fetchTasks)
+}
+
+function getOwnerName(task) {
+  return task.isOwner ? 'Moi' : `${task.firstName} ${task.lastName}`
 }
 
 function formatDate(d) {
